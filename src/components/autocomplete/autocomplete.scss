@@ -1,4 +1,4 @@
-@keyframes list-out {
+@keyframes md-autocomplete-list-out {
   0% {
     animation-timing-function: linear;
   }
@@ -12,7 +12,7 @@
     opacity: 0;
   }
 }
-@keyframes list-in {
+@keyframes md-autocomplete-list-in {
   0% {
     opacity: 0;
     height: 0;
@@ -31,7 +31,6 @@ md-content {
   overflow: visible;
 }
 md-autocomplete {
-  background: white;
   box-shadow: 0 2px 5px rgba(black, 0.25);
   border-radius: 2px;
   display: block;
@@ -79,7 +78,8 @@ md-autocomplete {
     border: none;
     box-shadow: none;
     padding: 0 15px;
-    font: 400 14px/40px Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 40px;
     height: 40px;
     outline: none;
     z-index: 2;
@@ -96,8 +96,6 @@ md-autocomplete {
     height: 20px;
     cursor: pointer;
     border: none;
-    background: #999;
-    color: white;
     border-radius: 50%;
     padding: 0;
     font-size: 12px;
@@ -120,7 +118,6 @@ md-autocomplete {
     top: 100%;
     left: 0;
     right: 0;
-    background: white;
     box-shadow: 0 2px 5px rgba(black, 0.25);
     margin: 0;
     list-style: none;
@@ -130,25 +127,18 @@ md-autocomplete {
     li {
       border-top: 1px solid #ddd;
       padding: 0 15px;
-      font: 400 14px/40px Roboto, sans-serif;
+      line-height: 40px;
+      font-size: 14px;
       overflow: hidden;
       height: 40px;
       transition: background 0.15s linear;
       cursor: pointer;
       margin: 0;
-      color: #212121;
-      .highlight {
-        color: #757575;
-      }
-      &:hover,
-      &.selected {
-        background: #eee;
-      }
       &.ng-enter {
-        animation: list-in 0.2s;
+        animation: md-autocomplete-list-in 0.2s;
       }
       &.ng-leave {
-        animation: list-out 0.2s;
+        animation: md-autocomplete-list-out 0.2s;
       }
     }
   }

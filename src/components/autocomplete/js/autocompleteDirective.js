@@ -58,7 +58,7 @@
               ng-if="searchText && !$mdAutocompleteCtrl.hidden"\
               ng-click="$mdAutocompleteCtrl.select(index)"\
               ng-transclude\
-              md-list-item="$mdAutocompleteCtrl.itemName">\
+              md-autocomplete-list-item="$mdAutocompleteCtrl.itemName">\
           </li>\
         </ul>\
         <aria-status\
