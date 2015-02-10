@@ -1,4 +1,4 @@
-ddescribe('<md-select-menu>', function() {
+describe('<md-select-menu>', function() {
 
   beforeEach(module('material.components.select'));
 
@@ -189,7 +189,7 @@ ddescribe('<md-select-menu>', function() {
   describe('multiple', function() {
 
     function setupMultiple(attrs, options) {
-      attrs = (attrs || '') + ' md-multiple';
+      attrs = (attrs || '') + ' multiple';
       return setup(attrs, options);
     }
 

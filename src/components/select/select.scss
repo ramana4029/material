@@ -5,6 +5,10 @@ $select-container-transition-duration: 350ms;
 
 $select-max-visible-options: 5;
 
+md-select {
+  display: inline-block;
+}
+
 .md-select-menu-container {
   position: absolute;
   left: 0;
@@ -15,6 +19,11 @@ $select-max-visible-options: 5;
   // Don't let the user select a new choice while it's animating
   &:not(.md-clickable) {
     pointer-events: none;
+  }
+
+  md-progress-circular {
+    display: table;
+    margin: 0 auto;
   }
 
   // enter: md-select scales in, then options fade in.
@@ -66,10 +75,6 @@ md-select-menu {
   }
   > * {
     opacity: 0;
-  }
-  // No top/bottom padding when overflowing
-  &:not(.md-overflow) md-content {
-    padding: $select-container-padding 0 $select-container-padding 0;
   }
 }
 

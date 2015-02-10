@@ -8,13 +8,16 @@
 **IMPLEMENTATION**
 
 - [ ] Async loading of md-options (eg no options for one second, then they all show up).
-- [ ] Implement CSS for an md-progress-circular in the select while the options are loading.
+- [ ] Style select button to match spec
+- [x] Implement CSS for an md-progress-circular in the select while the options are loading. 
+- [ ] Implement CSS for md-optgroup
 - [ ] Implement keyboard interaction
 - [ ] Implement ARIA & accessibility
-- [ ] Abstract the placement code from $mdSelect into a reusable $mdMenu service
-- [ ] Finish theming
+- [ ] Finish theming - theme color
+- [x] Add element option to interimElement to avoid recompiling every time (?)
+
+### TODO - POST RC1 ###
 - [ ] Abstract placement logic in $mdSelect service to $mdMenu service
-- [ ] Add element option to interimElement to avoid recompiling every time (?)
 
 **DOCUMENTATION AND DEMOS**
 
@@ -54,9 +57,9 @@ angular.module('material.components.select', [
  * @description Displays a select box, bound to an ng-model.
  *
  * @param {expression} ng-model The model!
- * @param {boolean=} md-multiple Whether it's multiple.
+ * @param {boolean=} multiple Whether it's multiple.
  */
-function SelectDirective($mdSelect, $mdUtil) {
+function SelectDirective($mdSelect, $mdUtil, $q) {
   return {
     restrict: 'E',
     compile: compile
@@ -84,11 +87,22 @@ function SelectDirective($mdSelect, $mdUtil) {
       element.append( angular.element('<md-content>').append(element.contents()) );
     }
 
+    // Add progress spinner for md-options-loading
+    if (attr.mdOnOpen) {
+      element.find('md-content').prepend( 
+        angular.element('<md-progress-circular>')
+               .attr('md-mode', 'indeterminate')
+               .attr('ng-hide', '$$loadingAsyncDone')
+      );
+    }
+
     // Use everything that's left inside element.contents() as the contents of the menu
-    var selectTemplate = '<md-select-menu ng-model="' + attr.ngModel + '" ' +
-      (angular.isDefined(attr.mdMultiple) ? 'md-multiple' : '') + '>' +
-      element.html() +
-    '</md-select-menu>';
+    var selectTemplate = '' +
+      '<div class="md-select-menu-container">' +
+        '<md-select-menu ng-model="$parent.' + attr.ngModel + '" ' +
+        (angular.isDefined(attr.multiple) ? 'multiple' : '') + '>' +
+          element.html() +
+        '</md-select-menu></div>';
 
     element.empty().append(labelEl);
 
@@ -108,12 +122,12 @@ function SelectDirective($mdSelect, $mdUtil) {
       function openSelect(ev) {
         scope.$evalAsync(function() {
           $mdSelect.show({
-            scope: scope,
-            preserveScope: true,
+            scope: scope.$new(),
             template: selectTemplate,
             target: element[0],
             inputTriggerEl: inputEl,
             hasBackdrop: inputEl.length === 0,
+            loadingAsync: attr.mdOnOpen ? scope.$eval(attr.mdOnOpen) : false
           });
         });
       }
@@ -146,7 +160,7 @@ function SelectMenuDirective($parse, $mdSelect, $mdUtil, $mdTheming) {
 
     function clickListener(ev) {
       var option = $mdUtil.getClosest(ev.target, 'md-option');
-      var optionCtrl = option && angular.element(option).controller('mdOption');
+      var optionCtrl = option && angular.element(option).data('$mdOptionController');
       if (!option || !optionCtrl) return;
 
       var optionHashKey = selectCtrl.hashGetter(optionCtrl.value);
@@ -172,7 +186,7 @@ function SelectMenuDirective($parse, $mdSelect, $mdUtil, $mdTheming) {
 
   function SelectMenuController($scope, $element, $attrs) {
     var self = this;
-    self.isMultiple = angular.isDefined($attrs.mdMultiple);
+    self.isMultiple = angular.isDefined($attrs.multiple);
     // selected is an object with keys matching all of the selected options' hashed values
     self.selected = {};
     // options is an object with keys matching every option's hash value,
@@ -369,17 +383,12 @@ function SelectProvider($$interimElementProvider) {
   /* @ngInject */
   function selectDefaultOptions($animate, $mdSelect, $mdConstant, $$rAF, $mdUtil, $mdTheming, $timeout) {
     return {
-      transformTemplate: transformTemplate,
       parent: getParent,
       onShow: onShow,
       onRemove: onRemove,
       hasBackdrop: true,
       themable: true
     };
-
-    function transformTemplate(template) {
-      return '<div class="md-select-menu-container">' + template + '</div>';
-    }
 
     function getParent(scope, element, options) {
       if (!options.target) return;
@@ -402,6 +411,12 @@ function SelectProvider($$interimElementProvider) {
         backdrop: opts.hasBackdrop && angular.element('<md-backdrop>')
       });
 
+      if (opts.loadingAsync && opts.loadingAsync.then) {
+        opts.loadingAsync.then(function() {
+          scope.$$loadingAsyncDone = true;
+        });
+      }
+
       // Only activate click listeners after a short time to stop accidental double taps/clicks
       // from clicking the wrong item
       $timeout(activateInteraction, 75, false);
@@ -415,8 +430,10 @@ function SelectProvider($$interimElementProvider) {
       // Give the select a frame to 'initialize' in the DOM,
       // so we can read its height/width/position
       $$rAF(function() {
-        if (opts.isRemoved) return;
-        animateSelect(scope, element, opts);
+        $$rAF(function() {
+          if (opts.isRemoved) return;
+          animateSelect(scope, element, opts);
+        });
       });
 
       return $mdUtil.transitionEndPromise(opts.selectEl);
@@ -474,16 +491,13 @@ function SelectProvider($$interimElementProvider) {
           isScrollable = contentNode.scrollHeight > contentNode.offsetHeight,
           selectedNode = selectNode.querySelector('md-option[selected]'),
           optionNodes = selectNode.getElementsByTagName('md-option'),
-          centeredNode = selectedNode || optionNodes[Math.floor(optionNodes.length / 2 )];
+          centeredNode = selectedNode || optionNodes[Math.floor(optionNodes.length / 2 )] || contentNode.firstElementChild;
 
       if (contentNode.offsetWidth > maxWidth) {
         contentNode.style['max-width'] = maxWidth + 'px';
       }
       if (shouldOpenAroundTarget) {
         contentNode.style['min-width'] = targetRect.width + 'px';
-      }
-      if (isScrollable) {
-        selectNode.classList.add('md-overflow');
       }
 
       // Get the selectMenuRect *after* max-width is possibly set above
@@ -548,10 +562,10 @@ function SelectProvider($$interimElementProvider) {
 
   function getOffsetRect(node) {
     return node ? {
-      left: node.offsetLeft,
-      top: node.offsetTop,
-      width: node.offsetWidth,
-      height: node.offsetHeight
+      left: node.clientLeft,
+      top: node.clientTop,
+      width: node.clientWidth,
+      height: node.clientHeight
     } : { left: 0, top: 0, width: 0, height: 0 };
   }
 }

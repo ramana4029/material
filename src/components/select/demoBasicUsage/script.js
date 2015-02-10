@@ -16,8 +16,9 @@ var TPL = [
 
 angular.module('selectDemoBasic', ['ngMaterial'])
 
-.controller('AppCtrl', function($scope, $mdSelect) {
+.controller('AppCtrl', function($scope, $mdSelect, $q, $timeout) {
   $scope.choice = "B";
+  $scope.selectedItem = 1;
   $scope.openSelect = function($event) {
     $mdSelect.show({
       template: TPL,
@@ -32,5 +33,17 @@ angular.module('selectDemoBasic', ['ngMaterial'])
       scope: $scope,
       target: document.querySelector('.md-button.no-choice')
     });
+  };
+
+  $scope.loadAsync = function() {
+    // Use timeout to simulate a promise that resolves after 350ms, populate asyncOptions
+    return $timeout(function() {
+      $scope.asyncOptions = [
+        { id: 1, text: 'These' },
+        { id: 2, text: 'Were' },
+        { id: 3, text: 'Loaded' },
+        { id: 4, text: 'Async' },
+      ];
+    }, 350);
   };
 });

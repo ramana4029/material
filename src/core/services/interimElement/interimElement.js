@@ -345,6 +345,8 @@ function InterimElementProvider() {
             return $mdCompiler.compile(options).then(function(compileData) {
               angular.extend(compileData.locals, self.options);
 
+              element = compileData.link(options.scope);
+
               // Search for parent at insertion time, if not specified
               if (angular.isFunction(options.parent)) {
                 options.parent = options.parent(options.scope, element, options);
@@ -359,7 +361,6 @@ function InterimElementProvider() {
                 if (!options.parent.length) options.parent = $rootElement;
               }
 
-              element = compileData.link(options.scope);
               if (options.themable) $mdTheming(element);
               var ret = options.onShow(options.scope, element, options);
               return $q.when(ret)

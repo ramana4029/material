@@ -373,15 +373,15 @@ describe('$$interimElement service', function() {
         expect(shown).toBe(true);
       }));
 
-      it('allows string parent selector', inject(function($rootScope, $document) {
+      it('allows string parent selector', inject(function($rootElement, $rootScope, $document) {
         var parent = angular.element('<div id="super-parent">');
-        spyOn($document[0], 'querySelector').andReturn(parent[0]);
+        spyOn($rootElement[0], 'querySelector').andReturn(parent[0]);
 
         var shown = false;
         Service.show({
           parent: '#super-parent',
           onShow: function(scope, element, options) {
-            expect($document[0].querySelector).toHaveBeenCalledWith('#super-parent');
+            expect($rootElement[0].querySelector).toHaveBeenCalledWith('#super-parent');
             expect(options.parent[0]).toBe(parent[0]);
             shown = true;
           }

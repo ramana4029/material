@@ -47,6 +47,14 @@ describe('$mdCompiler service', function() {
       expect(data.element.html()).toBe('hello world');
     });
 
+    it('should allow an element passthrough', inject(function($compile) {
+      var el = angular.element('<h1>Hello World</h1>');
+      var data = compile({
+        element: el
+      });
+      expect(data.element[0]).toBe(el[0]);
+    }));
+
     it('resolve and locals should work', function() {
       module(function($provide) {
         $provide.constant('StrawberryColor', 'red');
